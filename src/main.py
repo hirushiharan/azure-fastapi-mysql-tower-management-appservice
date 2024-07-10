@@ -21,6 +21,10 @@ async def index(request: Request):
     else:
         return JSONResponse(content={"error": "File not found"}, status_code=404)
 
+# To check if the app is running
+@app.get("/")
+async def root():
+    return {"message": "Hello, World!"}
+
 if __name__ == '__main__':
     uvicorn.run('main:app', host='0.0.0.0', port=8000)
-
