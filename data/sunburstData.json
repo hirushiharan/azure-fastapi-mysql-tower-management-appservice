@@ -1,0 +1,89 @@
+{
+    "name": "Site Identification and Selection",
+    "children": [
+      {
+        "name": "Real Estate Costs",
+        "children": [
+          { "name": "Labor Expenses", "size": 345.0 },
+          { "name": "Infrastructure and Utilities", "size": 20000.0 },
+          { "name": "Taxation and Regulatory Framework", "size": 4078.37 },
+          { "name": "Supply Chain Proximity", "size": 4078.37 },
+          { "name": "Access to Resources", "size": 3364.65 },
+          { "name": "Risk Assessment and Contingency Planning", "size": 3466.61 },
+          { "name": "Economic Development Incentives", "size": 4792.08 }
+        ]
+      },
+      {
+        "name": "Site Survey and Assessment",
+        "children": [
+          { "name": "Research location features", "size": 4119.15 },
+          { "name": "Exhibitions", "size": 5607.76 },
+          { "name": "Survey design cost", "size": 6117.55 },
+          { "name": "Cost of getting survey respondents", "size": 2039.18 },
+          { "name": "Survey incentives", "size": 3058.78 },
+          { "name": "Computers", "size": 7137.14 },
+          { "name": "Electrical Appliances", "size": 3058.78 }
+        ]
+      },
+      {
+        "name": "Engineering and Design Assessment",
+        "children": [
+          { "name": "Project Scope", "size": 10710.0 },
+          { "name": "Design Plan", "size": 21420.0 },
+          { "name": "Specification", "size": 5355.0 },
+          { "name": "Work Breakdown", "size": 16065.0 },
+          { "name": "Resource Rate", "size": 5355.0 },
+          { "name": "Program of work", "size": 47124.0 },
+          { "name": "Risk Schedule", "size": 8568.0 }
+        ]
+      },
+      {
+        "name": "Regulation Compliance",
+        "children": [
+          { "name": "Determine risk potential", "size": 2854.86 },
+          { "name": "Determine Response", "size": 2854.86 },
+          { "name": "Cost Index", "size": 6000.0 },
+          { "name": "Risk quantification", "size": 7000.0 },
+          { "name": "Principles method", "size": 8000.0 },
+          { "name": "Forecast cost at completion", "size": 9000.0 },
+          { "name": "Progress", "size": 5500.0 }
+        ]
+      },
+      {
+        "name": "Infrastructure Development",
+        "children": [
+          { "name": "Cost management plan", "size": 56000.0 },
+          { "name": "Project cost estimate", "size": 5000.0 },
+          { "name": "Cost Index", "size": 6000.0 },
+          { "name": "Risk quantification", "size": 7000.0 },
+          { "name": "Project tracking", "size": 8000.0 },
+          { "name": "Forecast cost at completion", "size": 9000.0 },
+          { "name": "Prioritization", "size": 5500.0 }
+        ]
+      },
+      {
+        "name": "Quality Assurance and Testing",
+        "children": [
+          { "name": "Cost management plan", "size": 56000.0 },
+          { "name": "Project cost estimate", "size": 5000.0 },
+          { "name": "Cost Index", "size": 6000.0 },
+          { "name": "Prevention costs", "size": 7000.0 },
+          { "name": "Detection costs", "size": 8000.0 },
+          { "name": "Internal failure costs", "size": 9000.0 },
+          { "name": "External failure costs", "size": 5500.0 }
+        ]
+      },
+      {
+        "name": "Final Payment",
+        "children": [
+          { "name": "Review project plan", "size": 1223.51 },
+          { "name": "Review Work progress", "size": 4078.37 },
+          { "name": "Long-term profit", "size": 4282.29 },
+          { "name": "Completion and qualify", "size": 5352.86 },
+          { "name": "Additional services", "size": 8000.0 },
+          { "name": "Health issues", "size": 9000.0 },
+          { "name": "Impacts the aesthetic value of the property", "size": 5500.0 }
+        ]
+      }
+    ]
+  }  
