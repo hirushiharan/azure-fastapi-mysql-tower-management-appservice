@@ -1,0 +1,98 @@
+[
+    {
+      "stage": "Site Identification and Selection",
+      "action": "Quality plan",
+      "cost": "56790"
+    },
+    {
+      "stage": "Site Identification and Selection",
+      "action": "Exhibitions",
+      "cost": "34789"
+    },
+    {
+      "stage": "Site Identification and Selection",
+      "action": "Determine Responese",
+      "cost": "7000"
+    },
+    {
+      "stage": "Site Identification and Selection",
+      "action": "Process Estimate",
+      "cost": "6760"
+    },
+    {
+      "stage": "Site Survey and Assessment",
+      "action": "Project schedule",
+      "cost": "3547"
+    },
+    {
+      "stage": "Site Survey and Assessment",
+      "action": "cost Index",
+      "cost": "4568"
+    },
+    {
+      "stage": "Site Survey and Assessment",
+      "action": "Principles method",
+      "cost": "55767"
+    },
+    {
+      "stage": "Engineering and Design Assessment",
+      "action": "Corrective actions",
+      "cost": "56885"
+    },
+    {
+      "stage": "Engineering and Design Assessment",
+      "action": "Perform cost control",
+      "cost": "5676"
+    },
+    {
+      "stage": "Engineering and Design Assessment",
+      "action": "Cost change",
+      "cost": "3454"
+    },
+    {
+      "stage": "Regulation Compliance",
+      "action": "Forecast cost at completion",
+      "cost": "12345"
+    },
+    {
+      "stage": "Regulation Compliance",
+      "action": "Estimate",
+      "cost": "45676"
+    },
+    {
+      "stage": "Regulation Compliance",
+      "action": "Schedule - Other",
+      "cost": "34456"
+    },
+    {
+      "stage": "Infrastructure Development",
+      "action": "Project schedule",
+      "cost": "6000"
+    },
+    {
+      "stage": "Infrastructure Development",
+      "action": "Quality plan",
+      "cost": "567900"
+    },
+    {
+      "stage": "Quality Assurance and Testing",
+      "action": "Exhibitions",
+      "cost": "347890"
+    },
+    {
+      "stage": "Quality Assurance and Testing",
+      "action": "Cost management plan",
+      "cost": "347890"
+    },
+    {
+      "stage": "Final Payment",
+      "action": "Review project plan",
+      "cost": "23300"
+    },
+    {
+      "stage": "Final Payment",
+      "action": "Review Work progress",
+      "cost": "34700"
+    }
+  ]
+  
