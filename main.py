@@ -9,6 +9,7 @@ from pydantic_settings import BaseSettings
 import mysql.connector
 from mysql.connector import Error
 from datetime import date, datetime
+import time
 
 # Load environment variables from the .env file
 load_dotenv()
@@ -25,17 +26,25 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-# Database connection pooling
-connection_pool = mysql.connector.pooling.MySQLConnectionPool(
-    pool_name="mypool",
-    pool_size=5,
-    pool_reset_session=True,
-    host=settings.MYSQL_HOST,
-    user=settings.MYSQL_USER,
-    password=settings.MYSQL_ROOT_PASSWORD,
-    database=settings.MYSQL_DATABASE,
-    port=settings.MYSQL_PORT
-)
+# Database connection pooling with retry mechanism
+def create_connection_pool():
+    try:
+        return mysql.connector.pooling.MySQLConnectionPool(
+            pool_name="TMSV Pool",
+            pool_size=10,
+            pool_reset_session=True,
+            host=settings.MYSQL_HOST,
+            user=settings.MYSQL_USER,
+            password=settings.MYSQL_ROOT_PASSWORD,
+            database=settings.MYSQL_DATABASE,
+            port=settings.MYSQL_PORT,
+            connection_timeout=300
+        )
+    except Error as err:
+        print(f"Error creating connection pool: {err}")
+        raise
+
+connection_pool = create_connection_pool()
 
 app = FastAPI()
 app.mount("/data", StaticFiles(directory="data"), name="data")
@@ -44,14 +53,18 @@ base_path = Path('data/')
 
 # Dependency for database connection
 def get_db_connection():
-    try:
-        connection = connection_pool.get_connection()
-        if connection.is_connected():
-            print("SQL Connection Successful")
-            return connection
-    except Error as err:
-        print(f"Error: {err}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database connection error")
+    retries = 3
+    for attempt in range(retries):
+        try:
+            connection = connection_pool.get_connection()
+            if connection.is_connected():
+                print("SQL Connection Successful")
+                return connection
+        except Error as err:
+            print(f"Attempt {attempt + 1}: Error: {err}")
+            if attempt + 1 == retries:
+                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database connection error")
+        time.sleep(2)
 
 def format_response(data, request: Request, status_code: int) -> JSONResponse:
     """
