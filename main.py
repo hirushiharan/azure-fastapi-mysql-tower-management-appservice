@@ -30,7 +30,7 @@ settings = Settings()
 def create_connection_pool():
     try:
         return mysql.connector.pooling.MySQLConnectionPool(
-            pool_name="TMSV Pool",
+            pool_name="TMSV_Pool",
             pool_size=10,
             pool_reset_session=True,
             host=settings.MYSQL_HOST,
