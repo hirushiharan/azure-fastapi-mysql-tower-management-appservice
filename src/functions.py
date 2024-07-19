@@ -29,20 +29,102 @@ import mysql.connector
 from mysql.connector import Error
 from fastapi import Request, status, HTTPException
 from fastapi.responses import JSONResponse
+from mysql.connector.pooling import MySQLConnectionPool
+from pathlib import Path
+from starlette.middleware.base import BaseHTTPMiddleware
 
-def log(message: str, level: str = "INFO") -> None:
+INFO = "INFO"
+WARNING = "WARNING"
+ERROR = "ERROR"
+MAX_LOG_SIZE = 5 * 1024 * 1024  # 5 MB
+LOG_FILE = "logs/application.log"
+
+def rotate_log_file():
+    """
+    Rotates the log file when its size exceeds the maximum allowed size.
+
+    This function checks if the current log file exceeds the predefined maximum
+    size (5 MB). If it does, the function renames the current log file to include
+    a timestamp in its name and retains it as an old log file. The timestamp
+    format used is 'YYYYMMDD_HHMMSS' to ensure uniqueness and chronological
+    sorting of old log files.
+
+    The log file is renamed with the format: 'YYYYMMDD_HHMMSS-application.log'.
+
+    Returns:
+        None
+    """
+    if Path(LOG_FILE).exists() and Path(LOG_FILE).stat().st_size > MAX_LOG_SIZE:
+        # Generate a timestamp for the old log file
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        new_log_file_name = f"{timestamp}-{LOG_FILE}"
+        
+        # Rotate the log file
+        Path(LOG_FILE).rename(new_log_file_name)
+
+def log(message: str, level: str = INFO) -> None:
     """
     Log messages with a timestamp and a specific log level.
+    Supports logging to both the console and a file in JSON format.
 
     Args:
         message (str): The message to log.
-        level (str): The log level (e.g., INFO, WARN, ERROR).
+        level (str): The log level (e.g., INFO, WARNING, ERROR).
     
     Returns:
         None
     """
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log_message = {
+        "timestamp": timestamp,
+        "level": level,
+        "message": message
+    }
+    log_message_str = json.dumps(log_message)
+    
     print(f"{timestamp} [{level}] {message}")
+    
+    # Write to log file
+    with open(LOG_FILE, "a") as log_file:
+        log_file.write(log_message_str + "\n")
+
+class LoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        # Log request details
+        log_message = {
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "method": request.method,
+            "url": str(request.url),
+            "headers": dict(request.headers)
+        }
+        log(message=json.dumps(log_message), level="INFO")
+        
+        response = await call_next(request)
+        
+        # Log response details
+        log_message = {
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "status_code": response.status_code
+        }
+        log(message=json.dumps(log_message), level="INFO")
+        
+        return response
+    
+# DEPRECATED FUNTION
+def format_response(data, request: Request, status_code: int) -> JSONResponse:
+    """
+    Helper function to format the response.
+    """
+    headers = dict(request.headers)
+    content = {
+        "success": status_code == status.HTTP_200_OK,
+        "statusCode": status_code,
+        "headers": headers,
+        "totalCount": len(data) if status_code == status.HTTP_200_OK else 0,
+        "data": data if status_code == status.HTTP_200_OK else None,
+        "error": data if status_code != status.HTTP_200_OK else None
+    }
+    return JSONResponse(content=content, status_code=status_code)
 
 # Load environment variables from the .env file
 load_dotenv()
@@ -59,7 +141,7 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-def create_connection_pool():
+def create_connection_pool() -> MySQLConnectionPool:
     """
     Create a MySQL connection pool with retry mechanism.
 
@@ -69,26 +151,30 @@ def create_connection_pool():
     Raises:
         HTTPException: If there's an error creating the connection pool.
     """
-    try:
-        log("Creating connection pool...", "INFO")
-        return mysql.connector.pooling.MySQLConnectionPool(
-            pool_name="TMSV_Pool",
-            pool_size=10,
-            pool_reset_session=True,
-            host=settings.MYSQL_HOST,
-            user=settings.MYSQL_USER,
-            password=settings.MYSQL_ROOT_PASSWORD,
-            database=settings.MYSQL_DATABASE,
-            port=settings.MYSQL_PORT,
-            connection_timeout=300
-        )
-    except Error as err:
-        log(f"Error creating connection pool: {err}", "ERROR")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database connection pool creation error")
+    retries = 3
+    for attempt in range(retries):
+        try:
+            log("Creating connection pool...", "INFO")
+            return MySQLConnectionPool(
+                pool_name="TMSV_Pool",
+                pool_size=10,
+                pool_reset_session=True,
+                host=settings.MYSQL_HOST,
+                user=settings.MYSQL_USER,
+                password=settings.MYSQL_ROOT_PASSWORD,
+                database=settings.MYSQL_DATABASE,
+                port=settings.MYSQL_PORT,
+                connection_timeout=300
+            )
+        except Error as err:
+            log(f"Attempt {attempt + 1}: Error creating connection pool: {err}", "ERROR")
+            if attempt + 1 == retries:
+                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database connection pool creation error")
+            time.sleep(2)
 
 connection_pool = create_connection_pool()
 
-def get_db_connection():
+def get_db_connection() -> mysql.connector.MySQLConnection:
     """
     Get a database connection from the connection pool with retry mechanism.
 
@@ -106,10 +192,10 @@ def get_db_connection():
                 log("SQL Connection Successful", "INFO")
                 return connection
         except Error as err:
-            log(f"Attempt {attempt + 1}: Error: {err}", "ERROR")
+            log(f"Attempt {attempt + 1}: Error getting connection: {err}", "ERROR")
             if attempt + 1 == retries:
                 raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database connection error")
-        time.sleep(2)
+            time.sleep(2)
 
 def fetch_all_sql_table_data(table_name: str, db_conn) -> list:
     """

@@ -28,7 +28,50 @@ from fastapi.responses import JSONResponse
 from pathlib import Path
 from . import functions as fn
 
-app = FastAPI()
+description = """
+Tower Management System API provides endpoints to interact with the Tower Management SQL database and access JSON files. 
+
+## Endpoints
+
+### Root
+
+- **GET /**: Check if the application is running.
+
+### Closure Data
+
+- **GET /closureData**: Retrieve closure data from the SQL database.
+
+### Sunburst Data
+
+- **GET /sunburstData**: Retrieve sunburst chart data from a JSON file.
+
+### Grid Data
+
+- **GET /gridData**: Retrieve grid data from a JSON file.
+
+## Features
+
+- **Read Closure Data**: Fetch detailed information on project closures.
+- **Read Sunburst Data**: Access data used for visualizing hierarchical relationships.
+- **Read Grid Data**: Obtain grid-related data for visual representation or analysis.
+
+For detailed information and usage examples, refer to the API documentation on the provided endpoints.
+"""
+
+app = FastAPI(
+    title="Tower Management System APIs",
+    description=description,
+    version="1.0.0",
+    contact={
+        "name": "Hirushiharan Thevendran",
+        "email": "hirushiharant@gmail.com",
+    },
+    license_info={
+        "name": "Apache 2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
+    },
+)
+app.add_middleware(fn.LoggingMiddleware)
 app.mount("/data", StaticFiles(directory="data"), name="data")
 
 base_path = Path('data/')
@@ -124,3 +167,13 @@ async def internal_server_error_handler(request: Request, exc: Exception) -> JSO
         JSONResponse: A JSON response with the error message.
     """
     return JSONResponse(content="Internal Server Error", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class DatabaseConnectionError(Exception):
+    pass
+
+class DataFetchError(Exception):
+    pass
+
+@app.exception_handler(DatabaseConnectionError)
+async def database_connection_error_handler(request: Request, exc: DatabaseConnectionError) -> JSONResponse:
+    return JSONResponse(content="Database connection error", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
