@@ -98,7 +98,7 @@ async def root(request: Request):
     """
     Root endpoint to check if the app is running.
     """
-    return format_response(data="Tower Management Azure app is running...", request=request, status_code=status.HTTP_200_OK)
+    return JSONResponse(content="Tower Management Azure app is running...", status_code=status.HTTP_200_OK)
 
 @app.get("/closureData")
 async def get_closure_data(request: Request, db_conn=Depends(get_db_connection)):
@@ -106,7 +106,7 @@ async def get_closure_data(request: Request, db_conn=Depends(get_db_connection))
     Endpoint to retrieve closure data from a Azure SQL table.
     """
     data = fetch_all_sql_table_data('tmsv_360_project_closure', db_conn)
-    return format_response(data=data, request=request, status_code=status.HTTP_200_OK)
+    return JSONResponse(content=data, status_code=status.HTTP_200_OK)
 
 async def read_data_file(file_path: Path, request: Request) -> JSONResponse:
     """
@@ -117,16 +117,16 @@ async def read_data_file(file_path: Path, request: Request) -> JSONResponse:
             with file_path.open('r') as file:
                 data = json.load(file)
             print(f'Request for {file_path.name} received')
-            return format_response(data=data, request=request, status_code=status.HTTP_200_OK)
+            return JSONResponse(content=data, status_code=status.HTTP_200_OK)
         else:
             print(f'{file_path.name} file not found')
-            return format_response(data="File not found", request=request, status_code=status.HTTP_404_NOT_FOUND)
+            return JSONResponse(content="File not found", status_code=status.HTTP_404_NOT_FOUND)
     except json.JSONDecodeError:
         print("Error decoding JSON")
-        return format_response(data="Malformed JSON", request=request, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        return JSONResponse(content="Malformed JSON", status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
     except Exception as e:
         print(f"Error reading {file_path.name}: {e}")
-        return format_response(data="Internal Server Error", request=request, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JSONResponse(content="Internal Server Error", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @app.get("/sunburstData")
 async def get_sunburst_data(request: Request) -> JSONResponse:
@@ -149,21 +149,21 @@ async def bad_request_handler(request: Request, exc: Exception) -> JSONResponse:
     """
     Handler for 400 Bad Request
     """
-    return format_response(data="Bad Request", request=request, status_code=status.HTTP_400_BAD_REQUEST)
+    return JSONResponse(content="Bad Request", status_code=status.HTTP_400_BAD_REQUEST)
 
 @app.exception_handler(408)
 async def request_timeout_handler(request: Request, exc: Exception) -> JSONResponse:
     """
     Handler for 408 Request Timeout
     """
-    return format_response(data="Request Timeout", request=request, status_code=status.HTTP_408_REQUEST_TIMEOUT)
+    return JSONResponse(content="Request Timeout", status_code=status.HTTP_408_REQUEST_TIMEOUT)
 
 @app.exception_handler(500)
 async def internal_server_error_handler(request: Request, exc: Exception) -> JSONResponse:
     """
     Handler for 500 Internal Server Error
     """
-    return format_response(data="Internal Server Error", request=request, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return JSONResponse(content="Internal Server Error", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 if __name__ == '__main__':
     uvicorn.run('main:app', host='0.0.0.0', port=8000)
