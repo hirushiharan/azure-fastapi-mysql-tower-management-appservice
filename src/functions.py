@@ -67,7 +67,7 @@ class Settings(BaseSettings):
     Configuration class to load settings from environment variables.
 
     Attributes:
-        MYSQL_ROOT_PASSWORD (str): The root password for MySQL.
+        MYSQL_PASSWORD (str): The root password for MySQL.
         MYSQL_DATABASE (str): The name of the MySQL database.
         MYSQL_USER (str): The MySQL user.
         MYSQL_HOST (str): The MySQL host.
@@ -75,7 +75,7 @@ class Settings(BaseSettings):
         SENTRY_DSN (str): The Sentry DSN for error tracking.
     """
     
-    MYSQL_ROOT_PASSWORD: str
+    MYSQL_PASSWORD: str
     MYSQL_DATABASE: str
     MYSQL_USER: str
     MYSQL_HOST: str
@@ -114,7 +114,7 @@ def create_connection_pool() -> MySQLConnectionPool:
                 pool_reset_session=True,
                 host=settings.MYSQL_HOST,
                 user=settings.MYSQL_USER,
-                password=settings.MYSQL_ROOT_PASSWORD,
+                password=settings.MYSQL_PASSWORD,
                 database=settings.MYSQL_DATABASE,
                 port=settings.MYSQL_PORT,
                 connection_timeout=300
