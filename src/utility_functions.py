@@ -1,5 +1,5 @@
 """
-Module: Functions
+Module: Utility Functions
 Author: Hirushiharan Thevendran
 Organization: Lowcodeminds (Pvt) Ltd
 Created On: 07/16/2024
@@ -11,10 +11,9 @@ data fetching, and file reading. The functions are designed to interact with a M
 
 Functions:
     - log: Logs messages with a timestamp and log level.
-    - create_connection_pool: Creates a MySQL connection pool with a retry mechanism.
-    - get_db_connection: Retrieves a MySQL database connection from the pool with a retry mechanism.
-    - fetch_all_sql_table_data: Fetches all data from a specified SQL table, converting date fields to ISO format.
-    - read_data_file: Reads data from a JSON file and returns a JSONResponse with appropriate error handling.
+    - create_log_file: Ensures the log file exists.
+    - rotate_log_file: Rotates the log file when it exceeds a specified size.
+    - format_response: Formats responses for the FastAPI application.
     
 Python Version: 3.11
 """
@@ -25,11 +24,27 @@ from pathlib import Path
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
 
+# Constants for log levels and log file management
 INFO = "INFO"
 WARNING = "WARNING"
 ERROR = "ERROR"
 MAX_LOG_SIZE = 5 * 1024 * 1024  # 5 MB
 LOG_FILE = "logs/application.log"
+
+def create_log_file():
+    """
+    Ensures the log file exists.
+
+    This function checks if the log file specified by LOG_FILE exists. 
+    If it does not, the function creates an empty log file.
+    
+    Returns:
+        None
+    """
+    if not Path(LOG_FILE).exists():
+        Path(LOG_FILE).parent.mkdir(parents=True, exist_ok=True)
+        with open(LOG_FILE, "x") as file:
+            file.close()
 
 def rotate_log_file():
     """
@@ -53,12 +68,10 @@ def rotate_log_file():
         
         # Rotate the log file
         Path(LOG_FILE).rename(new_log_file_name)
-        file = open(LOG_FILE, "x")
-        file.close()
 
 def log(message: str, level: str = INFO) -> None:
     """
-    Log messages with a timestamp and a specific log level.
+    Logs messages with a timestamp and a specific log level.
     Supports logging to both the console and a file in JSON format.
 
     Args:
@@ -76,18 +89,28 @@ def log(message: str, level: str = INFO) -> None:
     }
     log_message_str = json.dumps(log_message)
     
+    # Print log message to the console
     print(f"{timestamp} [{level}] {message}")
     
+    # Rotate log file if necessary
     rotate_log_file()
+    create_log_file()
 
-    # Write to log file
+    # Write log message to the log file
     with open(LOG_FILE, "a") as log_file:
         log_file.write(log_message_str + "\n")
 
-# DEPRECATED FUNTION
 def format_response(data, request: Request, status_code: int) -> JSONResponse:
     """
-    Helper function to format the response.
+    Helper function to format the response for the FastAPI application.
+
+    Args:
+        data: The data to include in the response.
+        request (Request): The FastAPI request object.
+        status_code (int): The HTTP status code for the response.
+
+    Returns:
+        JSONResponse: The formatted JSON response.
     """
     headers = dict(request.headers)
     content = {

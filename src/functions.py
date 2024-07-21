@@ -10,7 +10,8 @@ Module Description: This module contains utility functions for the FastAPI appli
 data fetching, and file reading. The functions are designed to interact with a MySQL database and handle JSON data files.
 
 Functions:
-    - log: Logs messages with a timestamp and log level.
+    - LoggingMiddleware: Middleware for logging request and response details.
+    - Settings: Configuration class to load settings from environment variables.
     - create_connection_pool: Creates a MySQL connection pool with a retry mechanism.
     - get_db_connection: Retrieves a MySQL database connection from the pool with a retry mechanism.
     - fetch_all_sql_table_data: Fetches all data from a specified SQL table, converting date fields to ISO format.
@@ -33,7 +34,14 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from . import utility_functions as ufn
 
 class LoggingMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
+    """
+    Middleware for logging request and response details.
+
+    This middleware logs details about incoming HTTP requests and outgoing responses.
+    Logs include timestamp, request method, URL, headers, and response status code.
+    """
+    
+    async def dispatch(self, request: Request, call_next):
         # Log request details
         log_message = {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -55,6 +63,18 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         return response
 
 class Settings(BaseSettings):
+    """
+    Configuration class to load settings from environment variables.
+
+    Attributes:
+        MYSQL_ROOT_PASSWORD (str): The root password for MySQL.
+        MYSQL_DATABASE (str): The name of the MySQL database.
+        MYSQL_USER (str): The MySQL user.
+        MYSQL_HOST (str): The MySQL host.
+        MYSQL_PORT (int): The port for MySQL connection.
+        SENTRY_DSN (str): The Sentry DSN for error tracking.
+    """
+    
     MYSQL_ROOT_PASSWORD: str
     MYSQL_DATABASE: str
     MYSQL_USER: str
@@ -63,19 +83,26 @@ class Settings(BaseSettings):
     MYSQL_PORT: int
 
     class Config:
+        """
+        Configuration for Pydantic settings.
+        
+        Specifies the environment file from which to load settings.
+        """
         env_file = ".env"
 
 settings = Settings()
 
 def create_connection_pool() -> MySQLConnectionPool:
     """
-    Create a MySQL connection pool with retry mechanism.
+    Create a MySQL connection pool with a retry mechanism.
 
+    Tries to create a MySQL connection pool with retry logic. Logs attempts and errors.
+    
     Returns:
         MySQLConnectionPool: A pool of MySQL connections.
-    
+
     Raises:
-        HTTPException: If there's an error creating the connection pool.
+        HTTPException: If there's an error creating the connection pool after retries.
     """
     retries = 3
     for attempt in range(retries):
@@ -102,11 +129,13 @@ connection_pool = create_connection_pool()
 
 def get_db_connection() -> mysql.connector.MySQLConnection:
     """
-    Get a database connection from the connection pool with retry mechanism.
+    Retrieve a MySQL database connection from the pool with retry mechanism.
 
+    Attempts to get a connection from the pool with retry logic. Logs success and errors.
+    
     Returns:
         MySQLConnection: A MySQL database connection.
-    
+
     Raises:
         HTTPException: If unable to get a connection after retries.
     """
@@ -125,8 +154,10 @@ def get_db_connection() -> mysql.connector.MySQLConnection:
 
 def fetch_all_sql_table_data(table_name: str, db_conn) -> list:
     """
-    Fetch all data from the specified SQL table.
+    Fetch all data from a specified SQL table.
 
+    Executes a query to fetch all data from the given table. Converts date fields to ISO format.
+    
     Args:
         table_name (str): The name of the SQL table.
         db_conn (MySQLConnection): The database connection.
@@ -166,6 +197,9 @@ async def read_data_file(file_path: Path, request: Request) -> JSONResponse:
     """
     Utility function to read data from a JSON file.
 
+    Reads the JSON file at the specified path and returns a JSONResponse with the file content.
+    Logs the request and any errors encountered.
+    
     Args:
         file_path (Path): The path to the JSON file.
         request (Request): The HTTP request object.
